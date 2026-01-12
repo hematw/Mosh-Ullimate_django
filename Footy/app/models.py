@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 
 class Gym(models.Model):
+    id = models.UUIDField(auto_created=True, primary_key=True)
     name = models.CharField(max_length=255)
     description = models.TextField()
     owner_id = models.ForeignKey(User, models.RESTRICT)
@@ -28,6 +29,7 @@ class Court(models.Model):
         ("indoor", "Indoor"),
     )
     
+    id = models.UUIDField(auto_created=True, primary_key=True)
     gym_id = models.ForeignKey(to=Gym, on_delete=models.CASCADE)
     name =  models.CharField(max_length=255)
     price_per_hour = models.DecimalField(max_digits=6, decimal_places=2)
@@ -39,6 +41,7 @@ class Court(models.Model):
     
     
 class Booking(models.Model):
+    id = models.UUIDField(auto_created=True, primary_key=True)
     court_id = models.ForeignKey(Court, on_delete=models.RESTRICT)
     user_id =  models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
@@ -47,5 +50,6 @@ class Booking(models.Model):
     
     
 class Amenty(models.Model):
+    id = models.UUIDField(auto_created=True, primary_key=True)
     name = models.CharField(max_length=255)
     icon = models.URLField()
