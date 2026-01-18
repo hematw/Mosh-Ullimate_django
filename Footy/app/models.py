@@ -1,11 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
+from uuid import uuid4
 
 # Create your models here.
 
 
 class Gym(models.Model):
-    id = models.UUIDField(auto_created=True, primary_key=True)
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False, max_length=128)
     name = models.CharField(max_length=255)
     description = models.TextField()
     owner_id = models.ForeignKey(User, models.RESTRICT)
@@ -29,7 +30,7 @@ class Court(models.Model):
         ("indoor", "Indoor"),
     )
     
-    id = models.UUIDField(auto_created=True, primary_key=True)
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False, max_length=128)
     gym_id = models.ForeignKey(to=Gym, on_delete=models.CASCADE)
     name =  models.CharField(max_length=255)
     price_per_hour = models.DecimalField(max_digits=6, decimal_places=2)
@@ -41,7 +42,7 @@ class Court(models.Model):
     
     
 class Booking(models.Model):
-    id = models.UUIDField(auto_created=True, primary_key=True)
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False, max_length=128)
     court_id = models.ForeignKey(Court, on_delete=models.RESTRICT)
     user_id =  models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
@@ -50,6 +51,6 @@ class Booking(models.Model):
     
     
 class Amenty(models.Model):
-    id = models.UUIDField(auto_created=True, primary_key=True)
+    id = models.UUIDField(default=uuid4, primary_key=True, editable=False, max_length=128)
     name = models.CharField(max_length=255)
     icon = models.URLField()
