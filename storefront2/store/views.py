@@ -10,36 +10,16 @@ from django.db.models.aggregates import Count
 
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.viewsets import ModelViewSet
 
 # Create your views here.
 
 
-class ProductList(APIView):
-    def get(self, request):
-        queryset = Product.objects.select_related("collection").filter()
-        serializer = ProductSerializer(queryset, many=True)
-        return Response(serializer.data)
-    
-    
-    def post(self, request):
-        serializer = ProductSerializer(data = request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-class ProductDetail(APIView):
-    def get(self, request, id):
-        product = get_object_or_404(Product, pk=id)
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
     
-    def put(self, request, id):
-        product = get_object_or_404(Product, pk=id)
-        serializer = ProductSerializer(product, data = request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status.HTTP_200_OK)
     
     def delete(self, request, id):
         product = get_object_or_404(Product, pk=id)
@@ -48,24 +28,15 @@ class ProductDetail(APIView):
         else:
             product.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-
     
-class CollectionList(ListCreateAPIView):
+    
+class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.annotate(products_count=Count("products")).filter()
     serializer_class = CollectionSerializer
-    
-    def get_serializer_context(self):
-        return super().get_serializer_context()
-    
-    
-class CollectionDetail(RetrieveUpdateDestroyAPIView):    
-    serializer_class =CollectionSerializer
-    queryset = Collection.objects.annotate(products_count=Count("products"))
-    
 
     def delete(self, request, pk):
         collection = get_object_or_404(Collection.objects.annotate(products_count=Count("products")), pk=pk)
         if collection.products.count() > 1:
             return Response({"error": "Couldn't delete collection with existing products"})
         collection.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)    
+        return Response(status=status.HTTP_204_NO_CONTENT) 
