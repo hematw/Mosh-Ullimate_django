@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request 
 from rest_framework import status
-from .models import Product, Collection
+from .models import Product, Collection, OrderItem
 from .serializers import ProductSerializer, CollectionSerializer
 from django.db.models.aggregates import Count
 
@@ -19,24 +19,19 @@ from rest_framework.viewsets import ModelViewSet
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    
-    
-    def delete(self, request, id):
-        product = get_object_or_404(Product, pk=id)
-        if product.orderitem_set.count() > 1:
-            return Response({"error": "cannot delete product while there is order for them"})
-        else:
-            product.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+    def destroy(self, request, *args, **kwargs):
+        if OrderItem.objects.filter(product_id=kwargs["pk"]).count() > 0:
+            return Response({"error": "Couldn't remove product with orders"})
+        return super().destroy(request, *args, **kwargs)
     
     
 class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.annotate(products_count=Count("products")).filter()
     serializer_class = CollectionSerializer
-
-    def delete(self, request, pk):
-        collection = get_object_or_404(Collection.objects.annotate(products_count=Count("products")), pk=pk)
-        if collection.products.count() > 1:
-            return Response({"error": "Couldn't delete collection with existing products"})
-        collection.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT) 
+    
+    def destroy(self, request, *args, **kwargs):
+        collection = self.get_object()
+        if collection.products.exists():
+            return Response({"error": "Couldn't delete collection with associated products"})
+        return super().destroy(request, *args, **kwargs)
