@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     
     # added apps
     "rest_framework",
+    "django_filters",
     
     # custom apps
     "app"
